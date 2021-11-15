@@ -61,10 +61,89 @@ Explore the relationship (visual data exploration) between square footage and ho
 ```{r}
 ggplot(data = homes_sub, aes(x= SqFt, y= Price))+
   geom_point()+
-  geom_smooth(lm="method")
+  geom_smooth(method = lm)
 ```
 
+## Model the relationship with home price as DV
 
+```{r}
+homes_lm1 <- lm(Price ~ City + Bedrooms + Bathrooms + SqFt + PricePerSqFt + Status, data = homes_sub)
+
+# Make a subset that only contains the quantitative variables 
+homes_quant <- homes_sub %>% 
+  select(Price:PricePerSqFt)
+
+homes_cor <- cor(homes_quant)
+homes_cor
+
+corrplot(homes_cor, method = "ellipse")
+
+# How would I explore diagnostic plots?
+plot(homes_lm1)
+```
+
+Try another model (homes_lm2) where we simplify this a bit:
+- City
+- SqFt
+- Status 
+
+```{r}
+homes_lm2 <- lm(Price ~ City + SqFt + Status, data = homes_sub)
+
+# Or just call this in the console 
+homes_lm2
+
+# How would I explore diagnostic plots?
+plot(homes_lm2)
+```
+53% of variance in home price is explained by variables in the model - city, sqft and status 
+model fit and model complexity - AIC helps with the balance of the two. 
+
+
+Find the AIC value of each model:
+```{r}
+AIC(homes_lm1)
+AIC(homes_lm2)
+# lower aic values suggest better fit 
+```
+
+Try another permutation of this model that you might think might make sense, check out & compare the model fit, outputs and AIC value
+```{r}
+homes_lm3 <- lm(Price ~ City + Bedrooms + SqFt + PricePerSqFt + Status, data = homes_sub)
+
+homes_lm3
+
+AIC(homes_lm3)
+```
+
+```{r}
+homes_lm4 <- lm(Price ~ City + SqFt + Bedrooms + Status, data = homes_sub)
+
+summary(homes_lm4)
+
+AIC(homes_lm4)
+```
+
+Use 'modelsummary' to show model outputs side-by-side:
+
+If you use modelsummary to return model outputs of multiple models, it wants you to feed it to it as a list
+
+```{r}
+modelsummary(list(homes_lm1, homes_lm2, homes_lm3))
+```
+
+## Start making predictions with this model 
+
+
+Use 'broom::augment()'
+
+```{r}
+#for extrapolations? the fitted values are the predictions thrown out by the model
+#can also use predict function
+homes_predicted <- augment(homes_lm1)
+```
+
+Use the 'predict()' function to try out your model on new scenarios that you create.
 
 
 
